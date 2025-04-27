@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 
 class NearestHospitalPage extends StatefulWidget {
@@ -11,15 +10,17 @@ class NearestHospitalPage extends StatefulWidget {
 }
 
 class _NearestHospitalPageState extends State<NearestHospitalPage> {
+  final Set<Marker> _markers = {};
   LatLng? currentLocation;
+  GoogleMapController? _mapController;
 
   @override
   void initState() {
     super.initState();
-    _determinePosition();
+    _getCurrentLocation();
   }
 
-  Future<void> _determinePosition() async {
+  Future<void> _getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -37,55 +38,64 @@ class _NearestHospitalPageState extends State<NearestHospitalPage> {
     Position position = await Geolocator.getCurrentPosition();
     setState(() {
       currentLocation = LatLng(position.latitude, position.longitude);
+      _addMarkers();
     });
   }
 
-  List<Marker> _buildHospitalMarkers() {
-    if (currentLocation == null) return [];
+  void _addMarkers() {
+    if (currentLocation == null) return;
 
-    return [
+    _markers.add(
       Marker(
-        point: currentLocation!,
-        width: 40,
-        height: 40,
-        child: const Icon(Icons.location_pin, color: Colors.red, size: 40),
+        markerId: const MarkerId('current_location'),
+        position: currentLocation!,
+        infoWindow: const InfoWindow(title: 'You are here'),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+      ),
+    );
+
+    // Add dummy nearby hospitals (relative positions)
+    _markers.addAll([
+      Marker(
+        markerId: const MarkerId('hospital1'),
+        position: LatLng(
+          currentLocation!.latitude + 0.001,
+          currentLocation!.longitude + 0.0015,
+        ),
+        infoWindow: const InfoWindow(title: 'Hospital 1'),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
       ),
       Marker(
-        point: LatLng(currentLocation!.latitude + 0.001, currentLocation!.longitude + 0.001),
-        width: 40,
-        height: 40,
-        child: const Icon(Icons.local_hospital, color: Colors.green, size: 35),
+        markerId: const MarkerId('hospital2'),
+        position: LatLng(
+          currentLocation!.latitude - 0.0015,
+          currentLocation!.longitude + 0.002,
+        ),
+        infoWindow: const InfoWindow(title: 'Hospital 2'),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
       ),
-      Marker(
-        point: LatLng(currentLocation!.latitude - 0.0015, currentLocation!.longitude + 0.002),
-        width: 40,
-        height: 40,
-        child: const Icon(Icons.local_hospital, color: Colors.green, size: 35),
-      ),
-    ];
+    ]);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Nearest Hospitals')),
-      body: currentLocation == null
-          ? const Center(child: CircularProgressIndicator())
-          : FlutterMap(
-              options: MapOptions(
-                center: currentLocation,
-                zoom: 16,
+      body:
+          currentLocation == null
+              ? const Center(child: CircularProgressIndicator())
+              : GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: currentLocation!,
+                  zoom: 16,
+                ),
+                myLocationEnabled: true,
+                myLocationButtonEnabled: true,
+                markers: _markers,
+                onMapCreated: (controller) {
+                  _mapController = controller;
+                },
               ),
-              children: [
-                TileLayer(
-                  urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  subdomains: const ['a', 'b', 'c'],
-                ),
-                MarkerLayer(
-                  markers: _buildHospitalMarkers(),
-                ),
-              ],
-            ),
     );
   }
 }
