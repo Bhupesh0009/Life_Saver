@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../pages/about_page.dart';
 import '../pages/contact_page.dart';
-import '../pages/ambulance_tracking_page.dart'; // NEW: import the tracking page
 import '../widgets/feature_card.dart';
+import '../widgets/chatbot_fab.dart'; // ✅ Import the chatbot FAB
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -22,13 +22,19 @@ class HomePage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutPage()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AboutPage()),
+              );
             },
             child: const Text('About', style: TextStyle(color: Colors.white)),
           ),
           TextButton(
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ContactPage()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ContactPage()),
+              );
             },
             child: const Text('Contact', style: TextStyle(color: Colors.white)),
           ),
@@ -67,24 +73,15 @@ class HomePage extends StatelessWidget {
                     imagePath: 'assets/images/hospital.jpg',
                     title: 'Nearest Hospital',
                     description: 'Find nearest hospital around your location.',
-                  ),
-                  FeatureCard(
-                    imagePath: 'assets/images/ambulance.jpg',
-                    title: 'Ambulance Tracking',
-                    description: 'Track your ambulance live from anywhere and anytime.',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const AmbulanceTrackingPage()),
-                      );
-                    },
-                  ),
+                  )
                 ],
               ),
             ),
           ],
         ),
       ),
+      floatingActionButton: const ChatbotFAB(), // ✅ Chatbot FAB added
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
+import 'pages/chatbot_page.dart'; // ✅ Add this
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -11,6 +12,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData.dark(),
       home: const HomePage(),
       debugShowCheckedModeBanner: false,
+      routes: {
+        '/chatbot': (context) => const ChatbotPage(), // ✅ Register route
+      },
     );
   }
 }
